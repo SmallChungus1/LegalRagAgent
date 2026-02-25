@@ -28,7 +28,7 @@ os.environ.setdefault("SKIP_INJECTION_CHECK", "1")
 
 from main import (
     build_graph, _reset_llm_call_counter, _llm_call_counter,
-    skill_query_rewrite,
+    skill_query_rewrite, _get_deepseek_balance
 )
 from llm_config import get_provider_info
 from rag_utils import (
@@ -356,6 +356,38 @@ def save_case_study(query_info: dict, result: dict, output_dir: str = "case_stud
 
 
 def main():
+    # Set up DualLogger to tee stdout to latest_run_{provider}.txt
+    provider_name = os.getenv("LLM_PROVIDER", "default").strip().lower()
+    run_log_file = f"latest_run_{provider_name}.txt"
+    try:
+        with open(run_log_file, "w", encoding="utf-8") as f:
+            f.write(f"COMMAND RUN: uv run python {' '.join(sys.argv)}\n")
+            f.write("=" * 60 + "\n\n")
+
+        class DualLogger:
+            def __init__(self, filepath):
+                self.terminal = sys.stdout
+                self.log = open(filepath, "a", encoding="utf-8")
+
+            def write(self, message):
+                self.terminal.write(message)
+                self.log.write(message)
+
+            def flush(self):
+                self.terminal.flush()
+                self.log.flush()
+
+        sys.stdout = DualLogger(run_log_file)
+    except Exception as e:
+        print(f"Failed to setup file logger: {e}")
+
+    # Capture initial balance
+    initial_balance = _get_deepseek_balance()
+    initial_totals = {}
+    if initial_balance.get("is_available"):
+        for info in initial_balance.get("balance_infos", []):
+            initial_totals[info.get("currency")] = float(info.get("total_balance", 0.0))
+
     pinfo = get_provider_info()
     print(f"Provider: {pinfo['provider']} | Model: {pinfo['model']}")
     vs = get_vectorstore()
@@ -428,6 +460,32 @@ def main():
         llm = str(r.get("metrics", {}).get("total_llm_calls", "?"))
         print(f"{r['label']:<25} {r['subject']:<12} {raw_g:>8} {mq_g:>8} {mc:>4} "
               f"{steps_str:>10} {vrfy:>5} {conf:>6} {t:>6} {llm:>4}")
+
+    # Calculate overall accuracy
+    mc_total = sum(1 for r in results if r.get("mc_result"))
+    mc_correct = sum(1 for r in results if r.get("mc_result", {}) and r["mc_result"]["correct"])
+    if mc_total > 0:
+        accuracy = (mc_correct / mc_total) * 100
+        print(f"\nOVERALL ACCURACY: {mc_correct}/{mc_total} ({accuracy:.1f}%)")
+
+    # Calculate total cost for the eval run
+    if initial_balance.get("is_available"):
+        final_balance = _get_deepseek_balance()
+        if final_balance.get("is_available"):
+            cost_strs = []
+            for fin_info in final_balance.get("balance_infos", []):
+                currency = fin_info.get("currency")
+                fin_tot = float(fin_info.get("total_balance", 0.0))
+                init_tot = initial_totals.get(currency, 0.0)
+                spent = init_tot - fin_tot
+                if spent > 0:
+                    cost_strs.append(f"{spent:.4f} {currency}")
+                elif init_tot > 0:
+                    cost_strs.append(f"< 0.01 {currency} (API precision limitation)")
+            if cost_strs:
+                print("\n" + "=" * 100)
+                print(f"TOTAL API COST: {', '.join(cost_strs)}")
+                print("=" * 100)
 
     if save_mode and saved_files:
         print(f"\nCase studies saved to: {os.path.dirname(saved_files[0])}/")

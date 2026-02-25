@@ -5,6 +5,7 @@ import os
 import re
 import sys
 import time
+import requests
 from typing import Any, Dict, List, Literal, TypedDict
 
 from langchain_core.messages import HumanMessage, SystemMessage
@@ -33,6 +34,7 @@ class AgentState(TypedDict):
     final_cited_answer: str    # aggregated output
     accumulated_context: List[Dict[str, Any]]  # step summaries for replanner
     iteration_count: int       # cycle counter for loop guard
+    initial_balance: Dict[str, Any]            # initial deepseek balance snapshot
     injection_check: Dict[str, Any]            # {"is_safe": bool, "reasoning": str}
     verification_result: Dict[str, Any]        # {"is_verified": bool, "issues": [...], "reasoning": str}
     memory_hit: Dict[str, Any]                 # {"found": bool, "answer": str, "confidence": float}
@@ -138,6 +140,28 @@ def _log_cache_metrics(response, label: str) -> None:
 
 _MAX_RETRIES = 3
 _RETRY_BASE_DELAY = 2  # seconds
+
+def _get_deepseek_balance() -> Dict[str, Any]:
+    api_key = os.getenv("DEEPSEEK_API_KEY")
+    provider = os.getenv("LLM_PROVIDER", "").strip().lower()
+
+    if "deepseek" not in provider or not api_key:
+        return {"is_available": False}
+
+    try:
+        url = "https://api.deepseek.com/user/balance"
+        headers = {
+            "Accept": "application/json",
+            "Authorization": f"Bearer {api_key}"
+        }
+        res = requests.get(url, headers=headers, timeout=10)
+        res.raise_for_status()
+        data = res.json()
+        data["is_available"] = True
+        return data
+    except Exception as e:
+        logger.warning(f"Failed to fetch DeepSeek balance: {e}")
+        return {"is_available": False}
 
 
 def _extract_retry_delay(error_str: str) -> float | None:
@@ -334,6 +358,10 @@ def detect_injection_node(state: AgentState) -> AgentState:
     Skippable via SKIP_INJECTION_CHECK=1 env var (saves 1 LLM call for eval/testing).
     """
     print("\n--- DETECT INJECTION NODE ---")
+    
+    if "initial_balance" not in state or not state.get("initial_balance"):
+        state["initial_balance"] = _get_deepseek_balance()
+
     if os.getenv("SKIP_INJECTION_CHECK", "0") == "1":
         print("Injection check SKIPPED (SKIP_INJECTION_CHECK=1)")
         state["injection_check"] = {"is_safe": True, "reasoning": "Skipped via SKIP_INJECTION_CHECK"}
@@ -676,10 +704,25 @@ def observability_node(state: AgentState) -> AgentState:
     memory_hit = state.get("memory_hit", {})
     has_answer = bool(state.get("final_cited_answer", ""))
     injection_safe = state.get("injection_check", {}).get("is_safe", True)
+    
+    cost_spend = 0.0
+    initial_balance = state.get("initial_balance", {})
+    if initial_balance.get("is_available"):
+        final_balance = _get_deepseek_balance()
+        if final_balance.get("is_available"):
+            init_infos = {info["currency"]: float(info["total_balance"]) for info in initial_balance.get("balance_infos", [])}
+            for info in final_balance.get("balance_infos", []):
+                currency = info.get("currency")
+                fin_bal = float(info.get("total_balance", 0.0))
+                if currency in init_infos:
+                    cost_spend += max(0.0, init_infos[currency] - fin_bal)
+
     metrics = {
+        "model": get_provider_info().get("model", "unknown"),
         "total_llm_calls": _llm_call_counter["count"],
         "input_chars": _llm_call_counter["input_chars"],
         "output_chars": _llm_call_counter["output_chars"],
+        "cost_spend": f"{cost_spend:.4f} CNY" if cost_spend > 0 else ("< 0.01 CNY" if initial_balance.get("is_available") else "N/A"),
         "parse_failures": _parse_failure_count,
         "iteration_count": state.get("iteration_count", 0),
         "steps_completed": completed,

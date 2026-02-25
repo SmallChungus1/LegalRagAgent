@@ -18,6 +18,9 @@ load_dotenv()
 
 # Provider registry: name -> (base_url, api_key_env, model, rpd, tpd)
 PROVIDERS = {
+    # --- DeepSeek ---
+    "deepseek":           ("https://api.deepseek.com", "DEEPSEEK_API_KEY", "deepseek-chat",            None, None),
+    "deepseek-reasoner":  ("https://api.deepseek.com", "DEEPSEEK_API_KEY", "deepseek-reasoner",        None, None),
     # --- Google AI Studio ---
     "gemma":              ("https://generativelanguage.googleapis.com/v1beta/openai/", "GOOGLE_API_KEY", "gemma-3-27b-it",       14_400, None),
     "gemini-flash":       ("https://generativelanguage.googleapis.com/v1beta/openai/", "GOOGLE_API_KEY", "gemini-2.5-flash",     20,     None),
@@ -51,7 +54,7 @@ def _resolve_provider():
 
     if provider and provider in PROVIDERS:
         base_url, key_env, model, _, _ = PROVIDERS[provider]
-        api_key = os.getenv(key_env, "ollama") if key_env else "ollama"
+        api_key = os.getenv(key_env, "") if key_env else "ollama"
         return base_url, api_key, model
 
     # Legacy fallback: raw env vars
@@ -85,6 +88,8 @@ def get_llm(temperature: float = 0.0) -> ChatOpenAI:
         api_key=api_key,
         model=model,
         temperature=temperature,
+        timeout=60,
+        max_retries=2,
     )
 
 
