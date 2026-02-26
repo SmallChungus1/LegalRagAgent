@@ -1,0 +1,10 @@
+COMMAND RUN: uv run python eval_qa.py 2 --paralllel 2
+============================================================
+
+
+================================================================================
+QA EVALUATION (2 QUERIES)
+================================================================================
+
+Provider: custom | Model: llama-3.3-70b
+[rag_utils] Loading embedding model: Alibaba-NLP/gte-large-en-v1.5

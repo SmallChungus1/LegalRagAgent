@@ -17,11 +17,15 @@ logger = logging.getLogger(__name__)
 _gpu_lock = threading.Lock()
 
 def gpu_locked(func):
-    """Decorator to ensure only one thread accesses the GPU at a time."""
+    """Decorator to ensure only one thread accesses the GPU at a time on MPS."""
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
-        with _gpu_lock:
-            return func(*args, **kwargs)
+        import torch
+        # Only lock if we are on Apple Silicon MPS (known to crash with concurrent access)
+        if torch.backends.mps.is_available():
+            with _gpu_lock:
+                return func(*args, **kwargs)
+        return func(*args, **kwargs)
     return wrapper
 
 CHROMA_DB_DIR = "./chroma_db"
@@ -41,11 +45,17 @@ SOURCE_DIVERSE_RETRIEVAL = os.getenv("SOURCE_DIVERSE_RETRIEVAL", "0") == "1"
 @functools.lru_cache(maxsize=1)
 def get_embeddings():
     model_name = os.getenv("EMBEDDING_MODEL", DEFAULT_EMBEDDING_MODEL)
-    print(f"[rag_utils] Loading embedding model: {model_name}")
+    import torch
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    print(f"[rag_utils] Loading embedding model: {model_name} on {device}")
+    
     # Some models (gte-large, modernbert) use custom architectures that need trust_remote_code
     return HuggingFaceEmbeddings(
         model_name=model_name,
-        model_kwargs={"trust_remote_code": True},
+        model_kwargs={
+            "trust_remote_code": True,
+            "device": device
+        },
     )
 
 @functools.lru_cache(maxsize=1)
@@ -55,7 +65,10 @@ def get_cross_encoder():
     ms-marco-MiniLM-L-6-v2 scores (query, document) pairs with full
     cross-attention, catching semantic nuances that bi-encoder embeddings miss.
     """
-    return CrossEncoder("cross-encoder/ms-marco-MiniLM-L-6-v2")
+    import torch
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    print(f"[rag_utils] Loading cross-encoder on {device}")
+    return CrossEncoder("cross-encoder/ms-marco-MiniLM-L-6-v2", device=device)
 
 
 def rerank_with_cross_encoder(

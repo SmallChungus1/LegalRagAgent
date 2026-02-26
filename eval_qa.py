@@ -177,13 +177,14 @@ def main():
 
             def write(self, message):
                 if threading.current_thread() is threading.main_thread():
-                    self.terminal.write(message)
-                    self.log.write(message)
+                    with self._lock:
+                        self.terminal.write(message)
+                        self.log.write(message)
                 else:
                     self._get_buffer().write(message)
 
             def flush(self):
-                if threading.current_thread() is threading.main_thread():
+                with self._lock:
                     self.terminal.flush()
                     self.log.flush()
 
@@ -196,7 +197,7 @@ def main():
                             self.log.write(content)
                             self.terminal.flush()
                             self.log.flush()
-                    self.local.buffer = io.StringIO()
+                        self.local.buffer = io.StringIO()
 
         sys.stdout = DualLogger(run_log_file)
     except Exception as e:
