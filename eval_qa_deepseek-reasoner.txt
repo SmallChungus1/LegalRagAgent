@@ -4818,3 +4818,154 @@ Executing step 3.0: What are the key differences between proposed definitions of
     [2] mbe_746: Manslaughter is “the taking of human life by an act not justified in law, but wi...
     [3] mbe_722: In Li v. Yellow Cab Co. (1975) 13 Cal.3d 804, 119 Cal.Rptr. 858, 532 P.2d 1226, ...
     [4] mbe_128: Voluntary manslaughter is an unlawful killing done without malice, in the heat o...
+    [5] mbe_1226: Voluntary manslaughter is a killing that would otherwise be murder but is distin...
+  Synthesized (1815 chars): The evidence provided does not contain any proposed definitions of criminal negligence in the context of vehicular manslaughter, nor does it compare their leniency or favorability to defendants [Sourc...
+  Confidence score: 0.540
+
+Planning Table:
+  [COMPLETED] 1.0: What is the legal definition of criminal negligence in vehicular mansl  (0.630)
+  [COMPLETED] 2.0: How do courts define or interpret criminal negligence in vehicular man  (0.581)
+  [  PENDING] 3.0: What are the key differences between proposed definitions of criminal   (0.540)
+------------------------------------------------------------
+
+--- EVALUATOR NODE ---
+Step 3.0 PASSED (score: 0.540 >= 0.5)
+Iteration count: 3
+Aggregated final cited answer from completed steps.
+
+Planning Table:
+  [COMPLETED] 1.0: What is the legal definition of criminal negligence in vehicular mansl  (0.630)
+  [COMPLETED] 2.0: How do courts define or interpret criminal negligence in vehicular man  (0.581)
+  [COMPLETED] 3.0: What are the key differences between proposed definitions of criminal   (0.540)
+------------------------------------------------------------
+Hard step cap (3 completed). Routing to VERIFY_ANSWER.
+
+--- VERIFY / MC SELECT NODE ---
+  MC choices detected — selecting answer...
+  MC selection: **Answer: (C)**
+
+Reasoning:  
+- The legal research defines criminal negligence as an objective standard requiring a gross deviation from the standard of care, without intent or subjective awareness of risk.  
+- Choice (A) requires disregard and indifference, which aligns with an objective standard and is less favorable due to its lower threshold.  
+- Choice (B) sets a broad standard where failing to respond to circumstances constitutes criminal negligence, making it easier to prove and less favorable.  
+- Choice (C) requires intentional action or omission and conscious disregard of a known danger, introducing a higher subjective mental state that is harder for the prosecution to prove than the objective standard, thus most favorable to the defendant.  
+- Choice (D) frames criminal negligence as an intermediate standard between civil negligence and wanton misconduct, which is vague and may not raise the prosecution's burden significantly.
+
+--- OBSERVABILITY NODE ---
+
+==================================================
+  RUN METRICS SUMMARY
+==================================================
+  Model                  deepseek-reasoner
+  Total Llm Calls        307
+  Input Tokens           268350
+  Output Tokens          49329
+  Cost Spend             0.0400 CNY
+  Parse Failures         0
+  Iteration Count        3
+  Steps Completed        3
+  Steps Failed           0
+  Steps Pending          0
+  Query Type             multi_hop
+  Has Answer             True
+  Injection Safe         True
+==================================================
+
+  -> Result: CORRECT | 398.8s | TOTAL: 307 calls (11 this q) | IN: 268350 tokens (9696 this q) | OUT: 49329 tokens (1853 this q)
+[35/100] Evaluating qa_nan_67...
+
+--- DETECT INJECTION NODE ---
+Injection check SKIPPED (SKIP_INJECTION_CHECK=1)
+
+--- CLASSIFIER NODE ---
+Classifying: Trease owned Hilltop in fee simple. By his will, he devised as follows: "Hilltop to such of my grandchildren who shall reach the age of_21; and by this provision I intend to include all grandchildren whenever born." At the time of his death, Trease had three children and two grandchildren. Which of the following additions to or changes in the facts of the preceding question would produce a violation of the common-law Rule Against Perpetuities?
+
+Answer choices:
+  (A) A posthumous child was born to Trease.
+  (B) Trease's will expressed the intention to include all afterborn grandchildren in the gift.
+  (C) The instrument was an inter vivos conveyance rather than a will.
+  (D) Trease had no grandchildren living at the time of his death.
+Classification: multi_hop — This question requires applying the complex Rule Against Perpetuities to multiple factual scenarios, involving analysis of class gifts, lives in being, and instrument types.
+
+--- PLANNER NODE ---
+Generating plan for: Trease owned Hilltop in fee simple. By his will, he devised as follows: "Hilltop to such of my grandchildren who shall reach the age of_21; and by this provision I intend to include all grandchildren whenever born." At the time of his death, Trease had three children and two grandchildren. Which of the following additions to or changes in the facts of the preceding question would produce a violation of the common-law Rule Against Perpetuities? (type: multi_hop)
+Generated 1 plan steps
+
+Planning Table:
+  [  PENDING] 1.0: Under the common-law Rule Against Perpetuities, is a testamentary gift
+------------------------------------------------------------
+
+--- EXECUTOR NODE ---
+Executing step 1.0: Under the common-law Rule Against Perpetuities, is a testamentary gift to all grandchildren contingent on reaching age 21, including those born after the testator's death, valid or invalid?
+  Primary query: Rule Against Perpetuities common law testamentary bequest grandchildren continge...
+  Alt 1: future interests vesting perpetuities rule testamentary legacy descendants age c...
+  Alt 2: common-law RAP validity devise to issue condition precedent reaching majority af...
+  Retrieved 5 passages:
+    [1] mbe_966: The Rule Against Perpetuities requires that an interest in property, to be valid...
+    [2] mbe_884: The rule against perpetuities is generally stated with deceptive simplicity as f...
+    [3] mbe_974: Under the Rule Against Perpetuities, no interest in property is valid unless it ...
+    [4] mbe_967: Under the common law Rule Against Perpetuities, an interest must vest, if at all...
+    [5] mbe_355: The rule against perpetuities in Virginia voids a contingent remainder or execut...
+  Synthesized (1652 chars): Under the common-law Rule Against Perpetuities, the testamentary gift to all grandchildren contingent on reaching age 21, including those born after the testator's death, is **invalid**[Source 1].
+
+**...
+  Confidence score: 0.510
+
+Planning Table:
+  [  PENDING] 1.0: Under the common-law Rule Against Perpetuities, is a testamentary gift  (0.510)
+------------------------------------------------------------
+
+--- EVALUATOR NODE ---
+Step 1.0 PASSED (score: 0.510 >= 0.5)
+Iteration count: 1
+Aggregated final cited answer from completed steps.
+
+Planning Table:
+  [COMPLETED] 1.0: Under the common-law Rule Against Perpetuities, is a testamentary gift  (0.510)
+------------------------------------------------------------
+All current steps done (multi_hop). Routing to REPLANNER...
+
+--- REPLANNER NODE ---
+Accumulated context: 1 steps (1 completed, 0 failed)
+Replanner action: next_step — The initial research indicates the original gift is invalid, but the objective requires identifying specific changes that would produce a violation. To do so, we need to comprehensively understand the conditions under which the rule applies and how variations in the factual scenario affect the gift's validity.
+Added new step 2.0: What factors determine whether a testamentary gift to grandchildren contingent on reaching age 21 violates the common-law Rule Against Perpetuities, and how do changes in facts such as the number of living children or modifications to the age condition impact this?
+
+Planning Table:
+  [COMPLETED] 1.0: Under the common-law Rule Against Perpetuities, is a testamentary gift  (0.510)
+  [  PENDING] 2.0: What factors determine whether a testamentary gift to grandchildren co
+------------------------------------------------------------
+Routing to EXECUTOR (replanner added new step)...
+
+--- EXECUTOR NODE ---
+Executing step 2.0: What factors determine whether a testamentary gift to grandchildren contingent on reaching age 21 violates the common-law Rule Against Perpetuities, and how do changes in facts such as the number of living children or modifications to the age condition impact this?
+  Excluding 5 prior doc_ids
+  Primary query: Rule Against Perpetuities violation factors testamentary gift grandchildren cont...
+  Alt 1: Common law perpetuities rule bequest descendants contingent interest age 21 clas...
+  Alt 2: Future interests perpetuities analysis testamentary devise grandchildren age con...
+  Retrieved 5 passages:
+    [1] mbe_35: the Rule Against Perpetuities. The Rule is violated when there is a possibility ...
+    [2] mbe_462: we made clear that the Rule “is not a rule that invalidates interests which last...
+    [3] mbe_109: To distinguish between vested remainders and contingent remainders, a court must...
+    [4] mbe_546: A vested remainder is a present fixed right in the remainderman to take possessi...
+    [5] mbe_40: “Typically, a remainder interest occurs when a possessory interest in property (...
+  Synthesized (2364 chars): **Rule**: The common-law Rule Against Perpetuities voids an interest if there is any possibility it will vest later than 21 years after the death of a life in being at the creation of the interest [So...
+  Confidence score: 0.481
+
+Planning Table:
+  [COMPLETED] 1.0: Under the common-law Rule Against Perpetuities, is a testamentary gift  (0.510)
+  [  PENDING] 2.0: What factors determine whether a testamentary gift to grandchildren co  (0.481)
+------------------------------------------------------------
+
+--- EVALUATOR NODE ---
+Step 2.0 FAILED (score: 0.481 < 0.5)
+Iteration count: 2
+Aggregated final cited answer from completed steps.
+
+Planning Table:
+  [COMPLETED] 1.0: Under the common-law Rule Against Perpetuities, is a testamentary gift  (0.510)
+  [   FAILED] 2.0: What factors determine whether a testamentary gift to grandchildren co  (0.481)
+------------------------------------------------------------
+All current steps done (multi_hop). Routing to REPLANNER...
+
+--- REPLANNER NODE ---
+Replanner failed after retries: Request timed out.. Falling back to complete.

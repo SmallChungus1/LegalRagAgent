@@ -88,11 +88,9 @@ See [ARCHITECTURE.md](ARCHITECTURE.md) for full node-by-node reference, state sc
 ## Evaluation
 
 ```bash
-uv run python eval_comprehensive.py              # Two-phase: retrieval + full pipeline
-uv run python eval_comprehensive.py retrieval     # Phase 1 only (no LLM)
-uv run python eval_comprehensive.py pipeline 10   # Phase 2, first N queries
-uv run python eval_trace.py 3                     # Traced diagnostics, first N queries
-uv run python eval_trace.py 3 --save              # Save case studies to case_studies/
+uv run python eval_qa.py 100                     # Run full QA evaluation on 100 queries
+uv run python eval_qa.py 100 --continue          # Resume an interrupted evaluation from log file
+
 ```
 
 ### Latest Results (Gemma 3 27B, 20K passages)
