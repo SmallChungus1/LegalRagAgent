@@ -228,10 +228,26 @@ def main():
     
     def worker_func(i, q):
         try:
+            from main import _get_metrics
+            start_counts, _ = _get_metrics()
+            start_calls = start_counts["count"]
+            start_in = start_counts["input_chars"]
+            start_out = start_counts["output_chars"]
+
             print(f"[{i+1}/{n}] Evaluating {q['label']}...")
             res = run_single_query(app, q)
             mc_tag = "CORRECT" if res["is_correct"] else ("ERROR" if res["error"] else "WRONG")
-            print(f"  -> Result: {mc_tag} | {res['elapsed_sec']}s | {res['llm_calls']} LLM calls")
+            
+            end_counts, _ = _get_metrics()
+            end_calls = end_counts["count"]
+            end_in = end_counts["input_chars"]
+            end_out = end_counts["output_chars"]
+
+            q_calls = end_calls - start_calls
+            q_in = end_in - start_in
+            q_out = end_out - start_out
+
+            print(f"  -> Result: {mc_tag} | {res['elapsed_sec']}s | TOTAL: {end_calls} calls ({q_calls} this q) | IN: {end_in} tokens ({q_in} this q) | OUT: {end_out} tokens ({q_out} this q)")
             if res["error"]:
                 print(f"  -> Error: {res['error']}")
             return res
